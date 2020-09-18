@@ -1,0 +1,10 @@
+[package]
+authors = ["Anton Dort-Golts <dortgolts@gmail.com>"]
+name = "orderbook"
+version = "0.1.0"
+
+[dependencies]
+borsh = "0.7.1"
+near-sdk = "2.0.0"
+float-cmp = "0.8.0"
+serde = "1.0.116"

@@ -1,0 +1,23 @@
+[package]
+authors = ["Near Inc <hello@near.org>"]
+edition = "2018"
+name = "greeter"
+version = "0.1.0"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+near-sdk = "2.0.0"
+orderbook = {path = "../utils/orderbook-rs/"}
+
+[profile.release]
+codegen-units = 1
+# Tell `rustc` to optimize for small code size.
+debug = false
+lto = true
+opt-level = "z"
+panic = "abort"
+
+[workspace]
+members = []
