@@ -11,6 +11,7 @@ const ERR_BAD_PRICE_ASSET: &str = "bad price asset";
 const ERR_BAD_PRICE_VALUE: &str = "price must be non-negative";
 const ERR_BAD_QUANTITY_VALUE: &str = "quantity must be non-negative";
 const ERR_BAD_SEQ_ID: &str = "order ID out of range";
+const ERR_BAD_ORDER_CREATOR: &str = "order_creator cam't be empty";
 
 /* Validators */
 
@@ -41,14 +42,15 @@ where
     }
 
     pub fn validate(&self, request: &OrderRequest<Asset>) -> Result<(), &str> {
-        match *request {
+        match &*request {
             OrderRequest::NewMarketOrder {
                 order_asset,
                 price_asset,
                 side: _side,
                 qty,
+                order_creator,
                 ts: _ts,
-            } => self.validate_market(order_asset, price_asset, qty),
+            } => self.validate_market(*order_asset, *price_asset, *qty, order_creator.clone()),
 
             OrderRequest::NewLimitOrder {
                 order_asset,
@@ -56,8 +58,9 @@ where
                 side: _side,
                 price,
                 qty,
+                order_creator,
                 ts: _ts,
-            } => self.validate_limit(order_asset, price_asset, price, qty),
+            } => self.validate_limit(*order_asset, *price_asset, *price, *qty, order_creator.clone()),
 
             OrderRequest::AmendOrder {
                 id,
@@ -65,9 +68,9 @@ where
                 side: _side,
                 qty,
                 ts: _ts,
-            } => self.validate_amend(id, price, qty),
+            } => self.validate_amend(*id, *price, *qty),
 
-            OrderRequest::CancelOrder { id, side: _side } => self.validate_cancel(id),
+            OrderRequest::CancelOrder { id, side: _side } => self.validate_cancel(*id),
         }
     }
 
@@ -78,6 +81,7 @@ where
         order_asset: Asset,
         price_asset: Asset,
         qty: f64,
+        order_creator: String,
     ) -> Result<(), &str> {
         if self.orderbook_order_asset != order_asset {
             return Err(ERR_BAD_ORDER_ASSET);
@@ -91,6 +95,10 @@ where
             return Err(ERR_BAD_QUANTITY_VALUE);
         }
 
+        if order_creator == "" {
+            return Err(ERR_BAD_ORDER_CREATOR);
+        }
+
         Ok(())
     }
 
@@ -100,6 +108,7 @@ where
         price_asset: Asset,
         price: f64,
         qty: f64,
+        order_creator: String,
     ) -> Result<(), &str> {
         if self.orderbook_order_asset != order_asset {
             return Err(ERR_BAD_ORDER_ASSET);
@@ -115,6 +124,10 @@ where
 
         if qty <= 0.0 {
             return Err(ERR_BAD_QUANTITY_VALUE);
+        }
+
+        if order_creator == "" {
+            return Err(ERR_BAD_ORDER_CREATOR);
         }
 
         Ok(())

@@ -22,6 +22,7 @@ pub enum Success {
     Accepted {
         id: u64,
         order_type: OrderType,
+        order_creator: String,
         ts: u64,
     },
 
@@ -31,6 +32,7 @@ pub enum Success {
         order_type: OrderType,
         price: f64,
         qty: f64,
+        order_creator: String,
         ts: u64,
     },
 
@@ -40,6 +42,7 @@ pub enum Success {
         order_type: OrderType,
         price: f64,
         qty: f64,
+        order_creator: String,
         ts: u64,
     },
 
@@ -134,6 +137,7 @@ where
                 price_asset,
                 side,
                 qty,
+                order_creator,
                 ts: _ts,
             } => {
                 // generate new ID for order
@@ -141,6 +145,7 @@ where
                 proc_result.push(Ok(Success::Accepted {
                     id: order_id,
                     order_type: OrderType::Market,
+                    order_creator: order_creator.clone(),
                     ts: get_current_time(),
                 }));
 
@@ -151,6 +156,7 @@ where
                     price_asset,
                     side,
                     qty,
+                    order_creator,
                 );
             }
 
@@ -160,12 +166,14 @@ where
                 side,
                 price,
                 qty,
+                order_creator,
                 ts,
             } => {
                 let order_id = self.seq.next_id();
                 proc_result.push(Ok(Success::Accepted {
                     id: order_id,
                     order_type: OrderType::Limit,
+                    order_creator: order_creator.clone(),
                     ts: get_current_time(),
                 }));
 
@@ -177,6 +185,7 @@ where
                     side,
                     price,
                     qty,
+                    order_creator,
                     ts,
                 );
             }
@@ -217,6 +226,7 @@ where
         price_asset: Asset,
         side: OrderSide,
         qty: f64,
+        order_creator: String,
     ) {
         // get copy of the current limit order
         let opposite_order_result = {
@@ -237,6 +247,7 @@ where
                 OrderType::Market,
                 side,
                 qty,
+                &order_creator,
             );
 
             if !matching_complete {
@@ -248,6 +259,7 @@ where
                     price_asset,
                     side,
                     qty - opposite_order.qty,
+                    order_creator,
                 );
             }
         } else {
@@ -265,6 +277,7 @@ where
         side: OrderSide,
         price: f64,
         qty: f64,
+        order_creator: String,
         ts: u64,
     ) {
         // take a look at current opposite limit order
@@ -294,6 +307,7 @@ where
                     OrderType::Limit,
                     side,
                     qty,
+                    &order_creator,
                 );
 
                 if !matching_complete {
@@ -306,6 +320,7 @@ where
                         side,
                         price,
                         qty - opposite_order.qty,
+                        order_creator,
                         ts,
                     );
                 }
@@ -439,6 +454,7 @@ where
         order_type: OrderType,
         side: OrderSide,
         qty: f64,
+        order_creator: &str,
     ) -> bool {
         // real processing time
         let deal_time = get_current_time();
@@ -454,6 +470,7 @@ where
                 order_type,
                 price: opposite_order.price,
                 qty,
+                order_creator: order_creator.to_string(),
                 ts: deal_time,
             }));
 
@@ -464,6 +481,7 @@ where
                 order_type: OrderType::Limit,
                 price: opposite_order.price,
                 qty,
+                order_creator: order_creator.to_string(),
                 ts: deal_time,
             }));
 
@@ -492,6 +510,7 @@ where
                 order_type,
                 price: opposite_order.price,
                 qty: opposite_order.qty,
+                order_creator: order_creator.to_string(),
                 ts: deal_time,
             }));
 
@@ -502,6 +521,7 @@ where
                 order_type: OrderType::Limit,
                 price: opposite_order.price,
                 qty: opposite_order.qty,
+                order_creator: order_creator.to_string(),
                 ts: deal_time,
             }));
 
@@ -526,6 +546,7 @@ where
                 order_type,
                 price: opposite_order.price,
                 qty,
+                order_creator: order_creator.to_string(),
                 ts: deal_time,
             }));
             // report filled opposite limit order
@@ -535,6 +556,7 @@ where
                 order_type: OrderType::Limit,
                 price: opposite_order.price,
                 qty,
+                order_creator: order_creator.to_string(),
                 ts: deal_time,
             }));
 

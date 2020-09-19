@@ -62,6 +62,7 @@ mod tests {
             price_asset,
             OrderSide::Bid,
             2.0,
+            "test.example.testnet".to_string(),
             get_current_time(),
         );
 
@@ -91,6 +92,7 @@ mod tests {
             OrderSide::Bid,
             10.0,
             1.0,
+            "test.example.testnet".to_string(),
             get_current_time(),
         );
 
@@ -99,6 +101,7 @@ mod tests {
             price_asset,
             OrderSide::Ask,
             0.5,
+            "test.example.testnet".to_string(),
             get_current_time(),
         );
 
@@ -141,6 +144,7 @@ mod tests {
             OrderSide::Bid,
             10.0,
             1.0,
+            "test.example.testnet".to_string(),
             get_current_time(),
         );
 
@@ -150,6 +154,7 @@ mod tests {
             OrderSide::Bid,
             12.0,
             1.0,
+            "test.example.testnet".to_string(),
             get_current_time(),
         );
 
@@ -158,6 +163,7 @@ mod tests {
             price_asset,
             OrderSide::Ask,
             1.5,
+            "test.example.testnet".to_string(),
             get_current_time(),
         );
 
@@ -217,6 +223,7 @@ mod tests {
             OrderSide::Bid,
             10.0,
             2.0,
+            "test.example.testnet".to_string(),
             get_current_time(),
         );
 
@@ -243,6 +250,7 @@ mod tests {
             OrderSide::Bid,
             10.0,
             1.0,
+            "test.example.testnet".to_string(),
             get_current_time(),
         );
 
@@ -252,6 +260,7 @@ mod tests {
             OrderSide::Ask,
             9.0,
             0.5,
+            "test.example.testnet".to_string(),
             get_current_time(),
         );
 
@@ -294,6 +303,7 @@ mod tests {
             OrderSide::Bid,
             10.0,
             1.0,
+            "test.example.testnet".to_string(),
             get_current_time(),
         );
 
@@ -303,6 +313,7 @@ mod tests {
             OrderSide::Ask,
             9.0,
             0.5,
+            "test.example.testnet".to_string(),
             get_current_time(),
         );
 
@@ -338,6 +349,7 @@ mod tests {
             OrderSide::Ask,
             8.0,
             0.5,
+            "test.example.testnet".to_string(),
             get_current_time(),
         );
 
@@ -381,6 +393,7 @@ mod tests {
             OrderSide::Bid,
             10.0,
             1.0,
+            "test.example.testnet".to_string(),
             get_current_time(),
         );
 
@@ -393,6 +406,7 @@ mod tests {
             OrderSide::Ask,
             12.0,
             0.5,
+            "test.example.testnet".to_string(),
             get_current_time(),
         );
 
@@ -402,6 +416,7 @@ mod tests {
             OrderSide::Ask,
             12.5,
             2.5,
+            "test.example.testnet".to_string(),
             get_current_time(),
         );
 
@@ -418,6 +433,7 @@ mod tests {
             OrderSide::Bid,
             14.0,
             1.5,
+            "test.example.testnet".to_string(),
             get_current_time(),
         );
         let res = orderbook.process_order(order4);
