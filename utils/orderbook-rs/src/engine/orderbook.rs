@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 
 use super::domain::{Order, OrderSide, OrderType};
-use super::order_queues::{OrderIndex, OrderQueue};
+use super::order_queues::{OrderQueue};
 use super::orders::OrderRequest;
 use super::sequence;
 use super::validation::OrderRequestValidator;
@@ -71,8 +71,8 @@ pub enum Failed {
 pub struct Orderbook<Asset> {
     order_asset: Asset,
     price_asset: Asset,
-    bid_queue: OrderQueue<Order<Asset>>,
-    ask_queue: OrderQueue<Order<Asset>>,
+    pub bid_queue: OrderQueue<Order<Asset>>,
+    pub ask_queue: OrderQueue<Order<Asset>>,
     seq: sequence::TradeSequence,
     order_validator: OrderRequestValidator<Asset>,
 }
@@ -574,14 +574,6 @@ where
 
         // complete matching
         true
-    }
-
-    pub fn get_ask_queue(&self) -> Vec<OrderIndex> {
-        return self.ask_queue.clone().idx_queue.unwrap();
-    }
-
-    pub fn get_bid_queue(&self) -> Vec<OrderIndex> {
-        return self.bid_queue.clone().idx_queue.unwrap();
     }
 }
 
