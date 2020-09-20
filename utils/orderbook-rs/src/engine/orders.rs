@@ -11,7 +11,7 @@ where
         order_asset: Asset,
         price_asset: Asset,
         side: OrderSide,
-        qty: f64,
+        qty: u128,
         order_creator: String,
         ts: u64,
     },
@@ -21,7 +21,7 @@ where
         price_asset: Asset,
         side: OrderSide,
         price: f64,
-        qty: f64,
+        qty: u128,
         order_creator: String,
         ts: u64,
     },
@@ -30,7 +30,7 @@ where
         id: u64,
         side: OrderSide,
         price: f64,
-        qty: f64,
+        qty: u128,
         ts: u64,
     },
 
@@ -48,7 +48,7 @@ pub fn new_market_order_request<Asset>(
     order_asset: Asset,
     price_asset: Asset,
     side: OrderSide,
-    qty: f64,
+    qty: u128,
     order_creator: String,
     ts: u64,
 ) -> OrderRequest<Asset>
@@ -71,7 +71,7 @@ pub fn new_limit_order_request<Asset>(
     price_asset: Asset,
     side: OrderSide,
     price: f64,
-    qty: f64,
+    qty: u128,
     order_creator: String,
     ts: u64,
 ) -> OrderRequest<Asset>
@@ -97,7 +97,7 @@ pub fn amend_order_request<Asset>(
     id: u64,
     side: OrderSide,
     price: f64,
-    qty: f64,
+    qty: u128,
     ts: u64,
 ) -> OrderRequest<Asset>
 where

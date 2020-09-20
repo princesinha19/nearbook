@@ -11,6 +11,7 @@ use self::near_sdk::serde::Serialize;
 pub struct OrderIndex {
     pub id: u64,
     pub price: f64,
+    pub quantity: u128,
     pub timestamp: u64,
     pub order_side: OrderSide,
 }
@@ -103,7 +104,7 @@ impl<T> OrderQueue<T> {
     }
 
     // Add new limit order to the queue
-    pub fn insert(&mut self, id: u64, price: f64, ts: u64, order: T) -> bool {
+    pub fn insert(&mut self, id: u64, price: f64, qty: u128, ts: u64, order: T) -> bool {
         if self.orders.contains_key(&id) {
             // do not update existing order
             return false;
@@ -114,6 +115,7 @@ impl<T> OrderQueue<T> {
             id,
             price,
             timestamp: ts,
+            quantity: qty,
             order_side: self.queue_side,
         });
         self.orders.insert(id, order);
@@ -121,11 +123,11 @@ impl<T> OrderQueue<T> {
     }
 
     // use it when price was changed
-    pub fn amend(&mut self, id: u64, price: f64, ts: u64, order: T) -> bool {
+    pub fn amend(&mut self, id: u64, price: f64, qty: u128, ts: u64, order: T) -> bool {
         if self.orders.contains_key(&id) {
             // store new order data
             self.orders.insert(id, order);
-            self.rebuild_idx(id, price, ts);
+            self.rebuild_idx(id, price, qty, ts);
             true
         } else {
             false
@@ -177,7 +179,7 @@ impl<T> OrderQueue<T> {
     }
 
     /// Recreate order-index queue with changed index info
-    fn rebuild_idx(&mut self, id: u64, price: f64, ts: u64) {
+    fn rebuild_idx(&mut self, id: u64, price: f64, qty: u128, ts: u64) {
         if let Some(idx_queue) = self.idx_queue.take() {
             // deconstruct queue
             let mut active_orders = idx_queue;
@@ -187,6 +189,7 @@ impl<T> OrderQueue<T> {
             active_orders.push(OrderIndex {
                 id,
                 price,
+                quantity: qty,
                 timestamp: ts,
                 order_side: self.queue_side,
             });
@@ -224,10 +227,11 @@ mod test {
     fn get_queue_bids() -> OrderQueue<TestOrder> {
         let mut bid_queue = get_queue_empty(OrderSide::Bid);
 
-        assert!(bid_queue.insert(1, 1.01, get_current_time(), TestOrder { name: "low bid" },));
+        assert!(bid_queue.insert(1, 1.01, 2, get_current_time(), TestOrder { name: "low bid" },));
         assert!(bid_queue.insert(
             2,
             1.02,
+            1,
             get_current_time(),
             TestOrder {
                 name: "high bid first"
@@ -237,6 +241,7 @@ mod test {
         assert!(bid_queue.insert(
             3,
             1.02,
+            2,
             get_current_time(),
             TestOrder {
                 name: "high bid second"
@@ -252,15 +257,23 @@ mod test {
         assert!(ask_queue.insert(
             1,
             1.01,
+            1,
             get_current_time(),
             TestOrder {
                 name: "low ask first"
             },
         ));
-        assert!(ask_queue.insert(2, 1.02, get_current_time(), TestOrder { name: "high ask" },));
+        assert!(ask_queue.insert(
+            2,
+            1.02,
+            1,
+            get_current_time(),
+            TestOrder { name: "high ask" },
+        ));
         assert!(ask_queue.insert(
             3,
             1.01,
+            2,
             get_current_time(),
             TestOrder {
                 name: "low ask second"
@@ -277,12 +290,19 @@ mod test {
         assert_eq!(bid_queue.peek(), None);
 
         // insert unique
-        assert!(bid_queue.insert(1, 1.01, get_current_time(), TestOrder { name: "first bid" },));
+        assert!(bid_queue.insert(
+            1,
+            1.01,
+            2,
+            get_current_time(),
+            TestOrder { name: "first bid" },
+        ));
 
         // discard order with existing ID
         assert!(!bid_queue.insert(
             1,
             1.02,
+            5,
             get_current_time(),
             TestOrder {
                 name: "another first bid"
@@ -329,12 +349,25 @@ mod test {
         let mut ask_queue = get_queue_asks();
 
         // amend two orders in the queue
-        assert!(ask_queue.amend(2, 0.99, get_current_time(), TestOrder { name: "new first" },));
-        assert!(ask_queue.amend(1, 1.01, get_current_time(), TestOrder { name: "new last" },));
+        assert!(ask_queue.amend(
+            2,
+            0.99,
+            3,
+            get_current_time(),
+            TestOrder { name: "new first" },
+        ));
+        assert!(ask_queue.amend(
+            1,
+            1.01,
+            1,
+            get_current_time(),
+            TestOrder { name: "new last" },
+        ));
         // non-exist order
         assert!(!ask_queue.amend(
             4,
             3.03,
+            2,
             get_current_time(),
             TestOrder {
                 name: "nonexistent"

@@ -1,7 +1,7 @@
 [package]
-authors = ["Near Inc <hello@near.org>"]
+authors = ["Prince Sinha <sinhaprince013@gmail.com>", "Ayush Kaul <ayushk.kaul3@gmail.com>"]
 edition = "2018"
-name = "greeter"
+name = "nearbook"
 version = "0.1.0"
 
 [lib]

@@ -25,7 +25,7 @@ pub struct Order<Asset>
     pub price_asset: Asset,
     pub side: OrderSide,
     pub price: f64,
-    pub qty: f64,
+    pub qty: u128,
 }
 
 #[derive(Eq, PartialEq, Debug, Copy, Clone, Serialize)]

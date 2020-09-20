@@ -80,7 +80,7 @@ where
         &self,
         order_asset: Asset,
         price_asset: Asset,
-        qty: f64,
+        qty: u128,
         order_creator: String,
     ) -> Result<(), &str> {
         if self.orderbook_order_asset != order_asset {
@@ -91,7 +91,7 @@ where
             return Err(ERR_BAD_PRICE_ASSET);
         }
 
-        if qty <= 0.0 {
+        if qty <= 0 {
             return Err(ERR_BAD_QUANTITY_VALUE);
         }
 
@@ -107,7 +107,7 @@ where
         order_asset: Asset,
         price_asset: Asset,
         price: f64,
-        qty: f64,
+        qty: u128,
         order_creator: String,
     ) -> Result<(), &str> {
         if self.orderbook_order_asset != order_asset {
@@ -122,7 +122,7 @@ where
             return Err(ERR_BAD_PRICE_VALUE);
         }
 
-        if qty <= 0.0 {
+        if qty <= 0 {
             return Err(ERR_BAD_QUANTITY_VALUE);
         }
 
@@ -133,7 +133,7 @@ where
         Ok(())
     }
 
-    fn validate_amend(&self, id: u64, price: f64, qty: f64) -> Result<(), &str> {
+    fn validate_amend(&self, id: u64, price: f64, qty: u128) -> Result<(), &str> {
         if self.min_sequence_id > id || self.max_sequence_id < id {
             return Err(ERR_BAD_SEQ_ID);
         }
@@ -142,7 +142,7 @@ where
             return Err(ERR_BAD_PRICE_VALUE);
         }
 
-        if qty <= 0.0 {
+        if qty <= 0{
             return Err(ERR_BAD_QUANTITY_VALUE);
         }
 

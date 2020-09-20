@@ -31,7 +31,7 @@ pub enum Success {
         side: OrderSide,
         order_type: OrderType,
         price: f64,
-        qty: f64,
+        qty: u128,
         order_creator: String,
         ts: u64,
     },
@@ -41,7 +41,7 @@ pub enum Success {
         side: OrderSide,
         order_type: OrderType,
         price: f64,
-        qty: f64,
+        qty: u128,
         order_creator: String,
         ts: u64,
     },
@@ -49,7 +49,7 @@ pub enum Success {
     Amended {
         id: u64,
         price: f64,
-        qty: f64,
+        qty: u128,
         ts: u64,
     },
 
@@ -225,7 +225,7 @@ where
         order_asset: Asset,
         price_asset: Asset,
         side: OrderSide,
-        qty: f64,
+        qty: u128,
         order_creator: String,
     ) {
         // get copy of the current limit order
@@ -276,7 +276,7 @@ where
         price_asset: Asset,
         side: OrderSide,
         price: f64,
-        qty: f64,
+        qty: u128,
         order_creator: String,
         ts: u64,
     ) {
@@ -357,7 +357,7 @@ where
         order_id: u64,
         side: OrderSide,
         price: f64,
-        qty: f64,
+        qty: u128,
         ts: u64,
     ) {
         let order_queue = match side {
@@ -368,6 +368,7 @@ where
         if order_queue.amend(
             order_id,
             price,
+            qty,
             ts,
             Order {
                 order_id,
@@ -420,7 +421,7 @@ where
         price_asset: Asset,
         side: OrderSide,
         price: f64,
-        qty: f64,
+        qty: u128,
         ts: u64,
     ) {
         let order_queue = match side {
@@ -430,6 +431,7 @@ where
         if !order_queue.insert(
             order_id,
             price,
+            qty,
             ts,
             Order {
                 order_id,
@@ -453,7 +455,7 @@ where
         price_asset: Asset,
         order_type: OrderType,
         side: OrderSide,
-        qty: f64,
+        qty: u128,
         order_creator: &str,
     ) -> bool {
         // real processing time
