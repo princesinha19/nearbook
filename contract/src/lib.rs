@@ -7,31 +7,19 @@ use orderbook::{orders, Failed, OrderIndex, OrderSide, Orderbook, Success};
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-// const TOKEN_ACCOUNT: &str = "ft.hacker.testnet";
-// const SINGLE_CALL_GAS: u64 = 20_000_000_000_000; // 2 x 10^14
-// const TRANSFER_FROM_NEAR_COST: u128 = 36_500_000_000_000_000_000_000; // 365 x 10^20
+const SINGLE_CALL_GAS: u64 = 20_000_000_000_000; // 2 x 10^14
+const TRANSFER_FROM_NEAR_COST: u128 = 36_500_000_000_000_000_000_000; // 365 x 10^20
 
+#[allow(non_camel_case_types)]
 #[derive(PartialEq, Eq, Debug, Copy, Clone, BorshDeserialize, BorshSerialize)]
 pub enum Asset {
-    USD,
-    EUR,
-    BTC,
-    ETH,
+    nFT,
+    nDAI,
 }
 
 impl Default for Asset {
     fn default() -> Self {
-        Asset::BTC
-    }
-}
-
-fn parse_asset(asset: &str) -> Option<Asset> {
-    match asset {
-        "USD" => Some(Asset::USD),
-        "EUR" => Some(Asset::EUR),
-        "BTC" => Some(Asset::BTC),
-        "ETH" => Some(Asset::ETH),
-        _ => None,
+        Asset::nFT
     }
 }
 
@@ -43,7 +31,14 @@ fn parse_side(side: &str) -> Option<OrderSide> {
     }
 }
 
-fn get_time() -> u64 {
+fn get_token_account(side: OrderSide) -> String {
+    match side {
+        OrderSide::Ask => "ft.hacker.testnet".to_string(),
+        OrderSide::Bid => "dai.hacker.testnet".to_string(),
+    }
+}
+
+fn get_current_time() -> u64 {
     return env::block_timestamp();
 }
 
@@ -56,7 +51,7 @@ pub trait ExtFunToken {
 
 #[ext_contract(ext_this_contract)]
 pub trait ExtSimulation {
-    fn post_transfer(&mut self);
+    fn post_transfer(&mut self, price: f64, quantity: u128, side: String);
 }
 
 #[near_bindgen]
@@ -72,90 +67,167 @@ impl Market {
     #[init]
     pub fn new() -> Self {
         Self {
-            market_order_book: Orderbook::new(Asset::BTC, Asset::USD),
-            order_asset: parse_asset("BTC").unwrap(),
-            price_asset: parse_asset("USD").unwrap(),
+            market_order_book: Orderbook::new(Asset::nFT, Asset::nDAI),
+            order_asset: Asset::nFT,
+            price_asset: Asset::nDAI,
         }
     }
 
-    pub fn new_limit_order(
-        &mut self,
-        price: f64,
-        quantity: f64,
-        side: String,
-    ) -> Vec<Result<Success, Failed>> {
-        // let recipient_account = env::signer_account_id();
-
-        // ext_fungible_token::transfer_from(
-        //     env::signer_account_id(),
-        //     recipient_account, //TODO: Get current contract id
-        //     U128(1),
-        //     &TOKEN_ACCOUNT,
-        //     TRANSFER_FROM_NEAR_COST,
-        //     SINGLE_CALL_GAS,
-        // )
-        // .then(ext_this_contract::post_transfer(
-        //     &env::current_account_id(),
-        //     0,
-        //     SINGLE_CALL_GAS,
-        // ));
-
-        let order = orders::new_limit_order_request(
-            self.order_asset,
-            self.price_asset,
-            parse_side(&side).unwrap(),
+    pub fn new_limit_order(&mut self, price: f64, quantity: u128, side: String) {
+        ext_fungible_token::transfer_from(
+            env::signer_account_id(),
+            env::current_account_id(),
+            U128(quantity),
+            &get_token_account(parse_side(&side).unwrap()),
+            TRANSFER_FROM_NEAR_COST,
+            SINGLE_CALL_GAS,
+        )
+        .then(ext_this_contract::post_transfer(
             price,
             quantity,
-            get_time(),
-        );
-
-        return self.market_order_book.process_order(order);
+            side,
+            &env::current_account_id(),
+            0,
+            SINGLE_CALL_GAS,
+        ));
     }
 
     pub fn cancel_limit_order(&mut self, id: u64, side: String) -> Vec<Result<Success, Failed>> {
         let order = orders::limit_order_cancel_request(id, parse_side(&side).unwrap());
 
-        return self.market_order_book.process_order(order);
+        self.market_order_book.process_order(order)
     }
 
-    pub fn get_ask_orders(&mut self) -> Vec<OrderIndex> {
-        return self.market_order_book.get_ask_queue();
+    pub fn get_ask_orders(&self) -> Vec<OrderIndex> {
+        self.market_order_book.ask_queue.clone().idx_queue.unwrap()
     }
 
-    pub fn get_bid_orders(&mut self) -> Vec<OrderIndex> {
-        return self.market_order_book.get_bid_queue();
+    pub fn get_bid_orders(&self) -> Vec<OrderIndex> {
+        self.market_order_book.bid_queue.clone().idx_queue.unwrap()
     }
 
-    pub fn get_current_spread(&mut self) -> Vec<f64> {
-        if let Some((bid, ask)) = self.market_order_book.current_spread() {
-            return vec![ask, bid];
+    pub fn get_current_spread(&self) -> Vec<f64> {
+        if let Some((bid, ask)) = self.market_order_book.clone().current_spread() {
+            vec![ask, bid]
         } else {
-            return vec![0.0, 0.0];
+            vec![0.0, 0.0]
         }
     }
 
-    // pub fn post_transfer(&mut self) {
-    //     self._only_owner_predecessor();
-    //     assert_eq!(env::promise_results_count(), 1);
-    //     match env::promise_result(0) {
-    //         // We don't care about the result this time, hence the underscore
-    //         // This is how we'll get the number soon, though.
-    //         PromiseResult::Successful(_) => {}
-    //         PromiseResult::Failed => {
-    //             env::panic(b"(post_transfer) The promise failed. See receipt failures.")
-    //         }
-    //         PromiseResult::NotReady => env::panic(b"The promise was not ready."),
-    //     };
-    //     env::log(b"You've received a fungible token.")
-    // }
+    pub fn post_transfer(&mut self, price: f64, quantity: u128, side: String) {
+        self._only_owner_predecessor();
+        assert_eq!(env::promise_results_count(), 1);
+        match env::promise_result(0) {
+            PromiseResult::Successful(_) => {
+                env::log(b"Token Transfer Successful.");
 
-    // fn _only_owner_predecessor(&mut self) {
-    //     assert_eq!(
-    //         env::predecessor_account_id(),
-    //         env::current_account_id(),
-    //         "Only contract owner can sign transactions for this method."
-    //     );
-    // }
+                let order = orders::new_limit_order_request(
+                    self.order_asset,
+                    self.price_asset,
+                    parse_side(&side).unwrap(),
+                    price,
+                    quantity,
+                    env::signer_account_id(),
+                    get_current_time(),
+                );
+
+                let res = self.market_order_book.process_order(order);
+
+                self.process_orderbook_result(res)
+            }
+            PromiseResult::Failed => {
+                env::panic(b"(post_transfer) The promise failed. See receipt failures.")
+            }
+            PromiseResult::NotReady => env::panic(b"The promise was not ready."),
+        };
+    }
+
+    fn process_orderbook_result(
+        &mut self,
+        order: Vec<Result<Success, Failed>>,
+    ) -> Vec<Result<Success, Failed>> {
+        for temp_variable in &order {
+            let success = temp_variable.as_ref().unwrap();
+
+            match success {
+                Success::Accepted {
+                    id: _,
+                    order_type: _,
+                    order_creator: _,
+                    ts: _,
+                } => {}
+                Success::Filled {
+                    order_id: _,
+                    side,
+                    order_type: _,
+                    price: _,
+                    qty,
+                    order_creator,
+                    ts: _,
+                } => {
+                    let reverse_side = match side {
+                        OrderSide::Ask => OrderSide::Bid,
+                        OrderSide::Bid => OrderSide::Ask,
+                    };
+
+                    self.transfer(
+                        get_token_account(reverse_side),
+                        order_creator.to_string(),
+                        *qty,
+                    );
+                }
+                Success::PartiallyFilled {
+                    order_id: _,
+                    side,
+                    order_type: _,
+                    price: _,
+                    qty,
+                    order_creator,
+                    ts: _,
+                } => {
+                    let reverse_side = match side {
+                        OrderSide::Ask => OrderSide::Bid,
+                        OrderSide::Bid => OrderSide::Ask,
+                    };
+
+                    self.transfer(
+                        get_token_account(reverse_side),
+                        order_creator.to_string(),
+                        *qty,
+                    );
+                }
+                Success::Amended {
+                    id: _,
+                    price: _,
+                    qty: _,
+                    ts: _,
+                } => {}
+                Success::Cancelled { id: _, ts: _ } => {}
+            };
+        }
+
+        order
+    }
+
+    fn transfer(&mut self, token_account: String, order_creator: String, amount: u128) {
+        self._only_owner_predecessor();
+
+        ext_fungible_token::transfer(
+            order_creator,
+            U128(amount),
+            &token_account,
+            TRANSFER_FROM_NEAR_COST,
+            SINGLE_CALL_GAS,
+        );
+    }
+
+    fn _only_owner_predecessor(&mut self) {
+        assert_eq!(
+            env::predecessor_account_id(),
+            env::current_account_id(),
+            "Only contract owner can sign transactions for this method."
+        );
+    }
 }
 
 /*
@@ -169,17 +241,17 @@ impl Market {
  * yarn test
  *
  */
+// TODO: Complete this test
 #[cfg(test)]
 mod tests {
     use super::*;
     use near_sdk::MockedBlockchain;
     use near_sdk::{testing_env, VMContext};
 
-    // mock the context for testing, notice "signer_account_id" that was accessed above from env::
     fn get_context(input: Vec<u8>, is_view: bool) -> VMContext {
         VMContext {
             current_account_id: "alice_near".to_string(),
-            signer_account_id: "bob_near".to_string(),
+            signer_account_id: "prince_near".to_string(),
             signer_account_pk: vec![0, 1, 2],
             predecessor_account_id: "carol_near".to_string(),
             input,
@@ -210,62 +282,14 @@ mod tests {
         assert_eq!(spread[1], 0.0);
 
         // Ask Order
-        let res = contract.new_limit_order(1.25, 1.0, "Ask".to_string());
+        let res = contract.new_limit_order(1.25, 2, "Ask".to_string());
         // let res1 = contract.get_ask_orders();
         println!("Ask Result: {:?}", res);
 
         // Bid Order
-        let res2 = contract.new_limit_order(1.22, 0.56, "Bid".to_string());
+        let res2 = contract.new_limit_order(1.22, 1, "Bid".to_string());
         // let res3 = contract.get_bid_orders();
         println!("Bid Result: {:?}", res2);
-
-        // for temp_variable in res2 {
-        //     let x = temp_variable.unwrap();
-
-        //     match x {
-        //         Success::Accepted { id, order_type, ts } => {
-        //             println!(
-        //                 "Accepted => Id {} , Order type: {:?}, Timestamp: {}",
-        //                 id, order_type, ts
-        //             );
-        //         }
-        //         Success::Filled {
-        //             order_id,
-        //             side,
-        //             order_type,
-        //             price,
-        //             qty,
-        //             ts,
-        //         } => {
-        //             println!(
-        //                 "Filled => Id: {} , Side: {:?}, Order Type: {:?}, Price: {}, Quantity: {}, Timestamp: {}",
-        //                 order_id, side, order_type, price, qty, ts,
-        //             );
-        //         }
-        //         Success::PartiallyFilled {
-        //             order_id,
-        //             side,
-        //             order_type,
-        //             price,
-        //             qty,
-        //             ts,
-        //         } => {
-        //             println!(
-        //                 "PartiallyFilled => Id: {} , Side: {:?}, Order Type: {:?}, Price: {}, Quantity: {}, Timestamp: {}",
-        //                 order_id, side, order_type, price, qty, ts,
-        //             );
-        //         }
-        //         Success::Amended { id, price, qty, ts } => {
-        //             println!(
-        //                 "Amended => Id: {}, Price: {}, Quantity: {}, Timestamp: {}",
-        //                 id, price, qty, ts,
-        //             );
-        //         }
-        //         Success::Cancelled { id, ts } => {
-        //             println!("Cancelled => id {}, Timestamp: {}", id, ts,);
-        //         }
-        //     };
-        // }
 
         // Currrent Spread
         let spread = contract.get_current_spread();
