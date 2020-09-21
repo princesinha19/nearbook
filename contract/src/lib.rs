@@ -88,7 +88,7 @@ impl Market {
             side,
             &env::current_account_id(),
             0,
-            SINGLE_CALL_GAS,
+            250000000000000,
         ));
     }
 
@@ -169,7 +169,6 @@ impl Market {
                         OrderSide::Ask => OrderSide::Bid,
                         OrderSide::Bid => OrderSide::Ask,
                     };
-
                     self.transfer(
                         get_token_account(reverse_side),
                         order_creator.to_string(),
