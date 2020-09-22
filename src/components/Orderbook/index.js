@@ -1,8 +1,5 @@
-import 'regenerator-runtime/runtime';
 import React, { useState, useEffect } from "react";
-import { login, logout } from './utils';
-import './App.css';
-import 'bootstrap/dist/css/bootstrap.css';
+import { login, logout } from '../utils';
 import {
     Row,
     Button,
@@ -12,13 +9,13 @@ import {
     Table,
     CardDeck
 } from "react-bootstrap";
-import SuccessModal from "./utils/SuccessModal";
+import SuccessModal from "../Utils/SuccessModal";
 
-import getConfig from './config'
+import getConfig from '../config'
 const { networkId } = getConfig(process.env.NODE_ENV || 'development')
 const urlPrefix = `https://explorer.${networkId}.near.org/accounts`
 
-export default function App() {
+export default function Orderbook() {
     // use React Hooks to store greeting in component state
     const [askOrders, setAskOrders] = useState([]);
     const [bidOrders, setBidOrders] = useState([]);
@@ -133,7 +130,7 @@ export default function App() {
     }
 
     return (
-        <div className="App">
+        <div>
             <Button variant="warning" style={{ marginRight: "2%" }} className="float-right" onClick={logout}>
                 Sign out
             </Button>

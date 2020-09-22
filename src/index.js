@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import App from './App'
-import { initContract } from './utils'
+import App from './components/App'
+import { initContract } from './components/utils'
 
 window.nearInitPromise = initContract()
     .then(() => {
