@@ -8,14 +8,18 @@ import {
     Route,
     Redirect,
 } from "react-router-dom";
-import Orderbook from './Orderbook/index';
+import Orderbook from './Orderbook';
 import history from './Utils/History';
+import Rainbow from './Rainbow';
 
 function App() {
     const routes = (
         <Switch>
             <Route path="/" exact>
                 <Orderbook />
+            </Route>
+            <Route path="/rainbow-bridge" exact>
+                <Rainbow />
             </Route>
             <Redirect to="/" />
         </Switch>

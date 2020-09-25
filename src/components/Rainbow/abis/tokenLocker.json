@@ -1,0 +1,162 @@
+[
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "proofData",
+        "type": "bytes"
+      },
+      {
+        "name": "proofBlockHeight",
+        "type": "uint64"
+      }
+    ],
+    "name": "unlockToken",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "ethToken_",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "nearToken_",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "prover_",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "usedEvents_",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "name": "accountId",
+        "type": "string"
+      }
+    ],
+    "name": "lockToken",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "name": "ethToken",
+        "type": "address"
+      },
+      {
+        "name": "nearToken",
+        "type": "string"
+      },
+      {
+        "name": "prover",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "accountId",
+        "type": "string"
+      }
+    ],
+    "name": "Locked",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "name": "amount",
+        "type": "uint128"
+      },
+      {
+        "indexed": false,
+        "name": "recipient",
+        "type": "address"
+      }
+    ],
+    "name": "Unlocked",
+    "type": "event"
+  }
+]

@@ -1,0 +1,215 @@
+.jumbo {
+    display: block;
+    font-size: 2.5em;
+    margin: 1rem 0;
+    font-weight: normal;
+}
+
+.visually-hidden {
+    position: absolute;
+    text-indent: -9999em;
+}
+
+.notification-indicator {
+    background-color: var(--secondary);
+    border-radius: 50em;
+    color: var(--white);
+    font-size: 1em;
+    line-height: 1;
+    padding: 0.2em 0.4em;
+    position: absolute;
+    right: -0.5em;
+    top: -0.5em;
+    vertical-align: super;
+}
+
+.transfer {
+    background-color: var(--bg);
+    border-radius: 5px;
+    display: flex;
+    margin-bottom: 0.5em;
+    min-height: 3em;
+    padding: 0.5rem;
+    position: relative;
+    text-align: left;
+}
+
+.transfer:last-child {
+    margin-bottom: 0;
+}
+
+.transfer header {
+    align-items: center;
+    display: grid;
+    margin-right: 0.5em;
+    grid-template-columns: repeat(5, auto);
+    grid-gap: 0.2em;
+}
+
+.transfer header .arrow {
+    font-weight: 200;
+    color: var(--secondary);
+}
+
+.transfer header .arrow.failed {
+    color: var(--error);
+}
+
+.transfer header .arrow.success {
+    color: var(--success);
+}
+
+.transfer header .arrow.animate {
+    animation: rainbow 1.5s ease-in-out infinite;
+}
+
+.transfer header+* {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    text-align: center;
+    flex: 1;
+}
+
+.transfer p {
+    margin: 0;
+}
+
+.transfer footer {
+    font-size: 0.8em;
+    margin-right: -0.5rem;
+    margin-top: -0.5rem;
+}
+
+.transfer footer button {
+    background: none;
+    box-shadow: none;
+    color: var(--fg);
+    border: 1px solid var(--bg);
+    padding: 0 0.25em;
+    text-decoration: none;
+}
+
+.transfer footer button:hover, .transfer footer button:focus {
+    background: var(--shadow);
+}
+
+.transfer footer button:focus {
+    border-color: var(--light-gray);
+}
+
+.transfer footer button:active {
+    background: var(--light-gray);
+}
+
+.loader {
+    display: block;
+    text-indent: -900em;
+    width: 2em;
+    position: relative;
+    font-size: 0.75em;
+    margin: -0.5em 0 0 -0.7em
+}
+
+[disabled] .loader:after {
+    content: " ";
+    display: block;
+    width: 0.8em;
+    height: 0.8em;
+    border-radius: 50%;
+    border: 0.15em solid transparent;
+    border-top-color: var(--secondary);
+    animation: spin 1.5s ease-in-out infinite, rainbow 1.5s ease-in-out infinite;
+    position: absolute;
+    top: 0.35em;
+    right: 0.4em;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg)
+    }
+    100% {
+        transform: rotate(360deg)
+    }
+}
+
+@keyframes rainbow {
+    0% {
+        filter: hue-rotate(0deg)
+    }
+    100% {
+        filter: hue-rotate(360deg)
+    }
+}
+
+.dropdown {
+    background: var(--bg);
+    display: inline-block;
+    position: relative;
+    z-index: 1;
+}
+
+.dropdown>button {
+    background: var(--bg);
+    border: 1px solid var(--bg);
+    box-shadow: none;
+    color: var(--fg);
+    height: 100%;
+    position: relative;
+    z-index: 2;
+}
+
+.dropdown>button:hover, .dropdown>button:focus {
+    border: 1px solid var(--shadow);
+    box-shadow: none;
+    background: var(--shadow);
+}
+
+.dropdown>button+* {
+    display: none;
+}
+
+.dropdown.active>button {
+    border: 1px solid var(--light-gray);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-color: var(--shadow);
+}
+
+.dropdown.active>button+* {
+    display: block;
+    background: var(--shadow);
+    padding: 0.5em;
+    border-radius: 0 0 5px 5px;
+    border: 1px solid var(--light-gray);
+    max-width: calc(100vw - 2em);
+    position: absolute;
+    top: calc(100% - 1px);
+    z-index: 1;
+}
+
+.dropdown.active>button+.right {
+    right: 0;
+    border-top-left-radius: 5px;
+    text-align: right;
+}
+
+.dropdown.active>button+.left {
+    left: 0;
+    border-top-right-radius: 5px;
+}
+
+.link {
+    color: #e83e8c !important;
+    text-decoration: none;
+}
+
+.clip {
+    display: inline-block;
+    max-width: 10em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: top;
+    white-space: nowrap;
+}

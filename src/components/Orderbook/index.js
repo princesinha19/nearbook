@@ -9,9 +9,11 @@ import {
     Table,
     CardDeck
 } from "react-bootstrap";
-import SuccessModal from "../Utils/SuccessModal";
-
 import getConfig from '../config'
+import history from '../Utils/History';
+import SuccessModal from "../Utils/SuccessModal";
+import rainbowGif from '../../assets/rainbow-black.gif';
+
 const { networkId } = getConfig(process.env.NODE_ENV || 'development')
 const urlPrefix = `https://explorer.${networkId}.near.org/accounts`
 
@@ -19,6 +21,7 @@ export default function Orderbook() {
     // use React Hooks to store greeting in component state
     const [askOrders, setAskOrders] = useState([]);
     const [bidOrders, setBidOrders] = useState([]);
+    const [spread, setSpread] = useState([]);
     const [ndaiBalance, setNdaiBalance] = useState("");
     const [ftBalance, setFtBalance] = useState("");
     const [processing, setProcessing] = useState(false);
@@ -90,24 +93,31 @@ export default function Orderbook() {
             .then((balance) => {
                 setFtBalance(balance);
             });
+
+        window.contract.get_current_spread()
+            .then((spread) => {
+                setSpread(spread);
+            });
+    }
+
+    const redirectToRainbowBridge = () => {
+        history.push('/rainbow-bridge');
     }
 
     useEffect(() => {
-        // in this case, we only care to query the contract when signed in
         if (window.walletConnection.isSignedIn()) {
             fetchOrdersAndBalance();
         }
     }, []);
 
-    // if not signed in, return early with sign-in prompt
     if (!window.walletConnection.isSignedIn()) {
         return (
-            <Card className="mx-auto welcome-card ">
+            <Card className="mx-auto welcome-card">
                 <Card.Header style={{ fontSize: "1.7rem", textAlign: "center" }}>
-                    Welcome to NEAR Orderbook!
+                    Welcome to NEAR Orderbook
                 </Card.Header>
 
-                <Card.Body style={{ textAlign: "center" }}>
+                <Card.Body style={{ textAlign: "center", marginTop: "4%" }}>
                     <p>
                         To make use of the NEAR blockchain, you need to sign in. The button
                         below will sign you in using NEAR Wallet.
@@ -122,7 +132,7 @@ export default function Orderbook() {
                         Go ahead and click the button below to try it out:
                     </p>
                     <p style={{ textAlign: 'center', marginTop: '2.5em' }}>
-                        <button onClick={login}>Sign in</button>
+                        <Button variant="info" onClick={login}>Sign in</Button>
                     </p>
                 </Card.Body>
             </Card>
@@ -131,12 +141,25 @@ export default function Orderbook() {
 
     return (
         <div>
-            <Button variant="warning" style={{ marginRight: "2%" }} className="float-right" onClick={logout}>
+            <Button
+                variant="warning"
+                className="float-right"
+                onClick={logout}
+                style={{ marginRight: "2%", marginTop: "5px" }}
+            >
                 Sign out
             </Button>
 
-            <CardDeck className="mx-auto top-card ">
-                <Card style={{ marginLeft: "27%" }}>
+            <div
+                className="float-right"
+                onClick={redirectToRainbowBridge}
+                style={{ marginRight: "2%", cursor: "pointer" }}
+            >
+                <img style={{ width: '6em' }} src={rainbowGif} />
+            </div>
+
+            <CardDeck className="top-card">
+                <Card style={{ marginLeft: "33%" }}>
                     <Card.Header>nDAI Balance</Card.Header>
                     <Card.Body style={{ fontSize: "25px" }}>{ndaiBalance}</Card.Body>
                 </Card>
@@ -144,12 +167,20 @@ export default function Orderbook() {
                     <Card.Header>nFT Balance</Card.Header>
                     <Card.Body style={{ fontSize: "25px" }}>{ftBalance}</Card.Body>
                 </Card>
+                <Card>
+                    <Card.Header>Ask Spread</Card.Header>
+                    <Card.Body style={{ fontSize: "25px" }}>{spread[0]}</Card.Body>
+                </Card>
+                <Card>
+                    <Card.Header>Bid Spread</Card.Header>
+                    <Card.Body style={{ fontSize: "25px" }}>{spread[1]}</Card.Body>
+                </Card>
             </CardDeck>
 
-            <Card className="mx-auto form-card ">
+            <Card className="mx-auto form-card">
                 <Card.Header style={{ fontSize: "1.7rem", textAlign: "center" }}>
                     NEAR ORDER BOOK
-                </Card.Header>
+                     </Card.Header>
 
                 <Card.Body style={{ textAlign: "left" }}>
                     <p
@@ -247,13 +278,15 @@ export default function Orderbook() {
                 </Card.Footer>
             </Card>
 
-            <Row className="justify-content-md-center" style={{ marginTop: "4%" }}>
+            <Row className="justify-content-md-center"
+                style={{
+                    marginTop: "4%",
+                    marginLeft: "0px",
+                    marginRight: "0px"
+                }}
+            >
                 <Col xs lg="4">
-                    <p style={{
-                        textAlign: "center",
-                        fontWeight: "bold",
-                        fontSize: "1.5rem",
-                    }}>
+                    <p className="order-header">
                         <u>Ask Orders</u>
                     </p>
 
@@ -277,11 +310,7 @@ export default function Orderbook() {
                 </Col>
 
                 <Col xs lg="4">
-                    <p style={{
-                        textAlign: "center",
-                        fontWeight: "bold",
-                        fontSize: "1.5rem",
-                    }}>
+                    <p className="order-header">
                         <u>Bid Orders</u>
                     </p>
 
