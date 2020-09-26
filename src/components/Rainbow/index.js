@@ -21,6 +21,8 @@ export default function Rainbow() {
     const [completeTxs, setCompleteTxs] = useState([]);
     const [showTxs, setShowTxs] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [processing, setProcessing] = useState(false);
+    const [alreadyClaimed, setAlreadyClaimed] = useState(false);
     const ethUrlPrefix = `https://rinkeby.etherscan.io/address`;
     const nearUrlPrefix = `https://explorer.testnet.near.org/accounts`
 
@@ -43,6 +45,15 @@ export default function Rainbow() {
 
         setErc20Balance(formatLargeNum(erc20Balance));
         setNep21Balance(formatLargeNum(nep21Balance));
+
+        if (erc20Balance === 0) {
+            setAlreadyClaimed(
+                await window.freeTokenVault.methods.alreadyClaimed(
+                    window.ethUserAddress
+                ).call()
+            );
+        }
+
         setLoading(false);
     };
 
@@ -54,6 +65,23 @@ export default function Rainbow() {
 
     const redirectToHome = () => {
         history.push('/');
+    }
+
+    const handleGetFreeTokens = () => {
+        window.freeTokenVault.methods
+            .claimTestTokens()
+            .send()
+            .on('transactionHash', () => {
+                setProcessing(true);
+            })
+            .on('receipt', (_) => {
+                setProcessing(false);
+                getBalanceAndTransfers();
+            })
+            .catch((error) => {
+                console.log(error);
+                setProcessing(false);
+            });
     }
 
     useEffect(() => {
@@ -294,20 +322,48 @@ export default function Rainbow() {
                             <img style={{ height: "1em" }} src={nearLogo} /> NEAR
                         </Card.Header>
 
-                        <Card.Body style={{ marginTop: "10%" }}>
+                        <Card.Body style={{ marginTop: "7%" }}>
                             <p>
                                 Uh oh! You have no <span>{window.ethErc20Name} </span>
                                 tokens. If you want to send some to yourself on NEAR, you'll need to
                                 get some on Ethereum first 😄
                             </p>
-                            <p data-behavior="abound-token" style={{ display: 'none' }}>
-                                You can <a href="https://chadoh.com/abundance-token" target="_blank">mint yourself more
-                                <span>{window.ethErc20Name}</span>
-                                </a>
-                            </p>
-                            <p>
-                                Maybe you need to use a different account?
-                            </p>
+
+                            {!alreadyClaimed ?
+                                <div>
+                                    <p>
+                                        You can get 100 Free ETH <strong>{window.ethErc20Name} </strong>
+                                        (one time) by clicking below button:
+                                        <br />
+                                    </p>
+
+                                    <Button
+                                        style={{ marginTop: '10px' }}
+                                        variant="success"
+                                        onClick={handleGetFreeTokens}
+                                    >
+                                        {processing ?
+                                            <div className="d-flex align-items-center">
+                                                Processing
+                                                <span className="loading ml-2"></span>
+                                            </div>
+                                            :
+                                            <div>
+                                                GET 100 {window.ethErc20Name}
+                                            </div>
+                                        }
+                                    </Button>
+                                </div>
+                                :
+                                <div style={{ marginTop: "30px" }}>
+                                    <p style={{ color: "gray" }}>
+                                        You have already claimed your 100 {window.ethErc20Name}.
+                                    </p>
+                                    <p style={{ marginTop: "30px", fontWeight: "bold" }}>
+                                        Maybe you need to use a different account?
+                                    </p>
+                                </div>
+                            }
                         </Card.Body>
                     </Card>
                 }

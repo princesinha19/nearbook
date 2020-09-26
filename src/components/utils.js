@@ -112,11 +112,11 @@ export async function initWeb3(callback) {
 
     window.web3 = new Web3(window.ethereum)
     await window.ethereum.enable();
-    
+
     window.ethUserAddress = (await window.web3.eth.getAccounts())[0]
 
     window.erc20 = new window.web3.eth.Contract(
-        config.development.ethErc20AbiText,
+        config.development.ethErc20Abi,
         config.development.ethErc20Address,
         { from: window.ethUserAddress }
     )
@@ -130,8 +130,14 @@ export async function initWeb3(callback) {
     }
 
     window.tokenLocker = new window.web3.eth.Contract(
-        config.development.ethLockerAbiText,
+        config.development.ethLockerAbi,
         config.development.ethLockerAddress,
+        { from: window.ethUserAddress }
+    )
+
+    window.freeTokenVault = new window.web3.eth.Contract(
+        config.development.freeTokenVaultAbi,
+        config.development.freeTokenVaultAddress,
         { from: window.ethUserAddress }
     )
 

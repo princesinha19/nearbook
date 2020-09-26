@@ -10,13 +10,14 @@ try {
 
 const erc20Abi = require('./Rainbow/abis/erc20.json');
 const tokenLockerAbi = require('./Rainbow/abis/tokenLocker.json');
+const freeTokenVaultAbi = require('./Rainbow/abis/freeTokenVault.json');
 
 module.exports = {
     local: {
         ...localConfig,
         ethNetwork: 'localhost:9545',
-        ethErc20AbiText: erc20Abi,
-        ethLockerAbiText: tokenLockerAbi,
+        ethErc20Abi: erc20Abi,
+        ethLockerAbi: tokenLockerAbi,
         nearClientAccount: 'rainbow_bridge_eth_on_near_client',
         nearFunTokenAccount: 'nearfuntoken',
         nearWalletUrl: 'http://localhost:4000/',
@@ -25,9 +26,9 @@ module.exports = {
     development: {
         ethClientAddress: '0xF721c979db97413AA9D0F91ad531FaBF769bb09C',
         ethEd25519Address: '0x9003342d15B21b4C42e1702447fE2f39FfAF55C2',
-        ethErc20AbiText: erc20Abi,
+        ethErc20Abi: erc20Abi,
         ethErc20Address: '0x53Bf04b6d0818b0Df53494Fda641b38c2275eF28',
-        ethLockerAbiText: tokenLockerAbi,
+        ethLockerAbi: tokenLockerAbi,
         ethLockerAddress: '0x0429F4f8CE5CeD3AcF9a5393D48f189aA44957e8',
         ethNetwork: 'rinkeby',
         ethNodeUrl: 'https://rinkeby.infura.io/v3/TODO',
@@ -39,5 +40,7 @@ module.exports = {
         nearNodeUrl: 'https://rpc.testnet.near.org',
         nearProverAccount: 'ethonnearprover10',
         nearWalletUrl: 'https://wallet.testnet.near.org/',
+        freeTokenVaultAbi,
+        freeTokenVaultAddress: '0x2eb1EcC53AFc1FF3650A0356f6e90A27D634f161',
     },
 }
