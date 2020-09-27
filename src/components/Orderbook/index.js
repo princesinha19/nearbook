@@ -10,7 +10,9 @@ import {
     CardDeck
 } from "react-bootstrap";
 import getConfig from '../config'
+import Loading from '../Utils/Loading';
 import history from '../Utils/History';
+import AlertModal from "../Utils/AlertModal";
 import SuccessModal from "../Utils/SuccessModal";
 import rainbowGif from '../../assets/rainbow-black.gif';
 
@@ -24,8 +26,15 @@ export default function Orderbook() {
     const [spread, setSpread] = useState([]);
     const [ndaiBalance, setNdaiBalance] = useState("");
     const [ftBalance, setFtBalance] = useState("");
+    const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState(false);
-    const [successModal, setSuccessModal] = useState({ open: false });
+    const [successModal, setSuccessModal] = useState({
+        open: false
+    });
+    const [errorModal, setErrorModal] = useState({
+        msg: "",
+        open: false
+    });
 
     const [state, setState] = useState({
         price: "1.10",
@@ -62,42 +71,41 @@ export default function Orderbook() {
                 })
                 .catch((error) => {
                     setProcessing(false);
-                    console.log(error);
+                    setErrorModal({
+                        open: true,
+                        msg: error.message,
+                    });
                 });
         }
     };
 
-    const fetchOrdersAndBalance = () => {
-        window.contract.get_ask_orders()
-            .then((askOrders) => {
-                setAskOrders(askOrders);
-            })
-            .catch((error) => {
-                console.log(error);
-            })
-
-        window.contract.get_bid_orders()
-            .then((bidOrders) => {
-                setBidOrders(bidOrders);
-            })
-            .catch((error) => {
-                console.log(error);
-            })
-
-        window.ndai.get_balance({ owner_id: window.accountId })
-            .then((balance) => {
-                setNdaiBalance(balance);
+    const fetchOrdersAndBalance = async () => {
+        try {
+            const ftBalance = await window.ft.get_balance({
+                owner_id: window.accountId
             });
 
-        window.ft.get_balance({ owner_id: window.accountId })
-            .then((balance) => {
-                setFtBalance(balance);
+            const ndaiBalance = await window.ndai.get_balance({
+                owner_id: window.accountId
             });
 
-        window.contract.get_current_spread()
-            .then((spread) => {
-                setSpread(spread);
+            const spread = await window.contract.get_current_spread();
+            const askOrders = await window.contract.get_ask_orders()
+            const bidOrders = await window.contract.get_bid_orders();
+
+            setSpread(spread);
+            setAskOrders(askOrders);
+            setBidOrders(bidOrders);
+            setFtBalance(ftBalance);
+            setNdaiBalance(ndaiBalance);
+            setLoading(false);
+        } catch (error) {
+            setLoading(false);
+            setErrorModal({
+                open: true,
+                msg: error.message,
             });
+        }
     }
 
     const redirectToRainbowBridge = () => {
@@ -119,18 +127,19 @@ export default function Orderbook() {
 
                 <Card.Body style={{ textAlign: "center", marginTop: "4%" }}>
                     <p>
-                        To make use of the NEAR blockchain, you need to sign in. The button
-                        below will sign you in using NEAR Wallet.
-                    </p>
+                        To make use of the NEAR blockchain, you need to sign in.
+                        The button below will sign you in using NEAR Wallet.
+                        </p>
                     <p>
-                        By default, when your app runs in "development" mode, it connects
-                        to a test network ("testnet") wallet. This works just like the main
-                        network ("mainnet") wallet, but the NEAR Tokens on testnet aren't
-                        convertible to other currencies – they're just for testing!
-                    </p>
+                        By default, when your app runs in "development" mode,
+                        it connects to a test network ("testnet") wallet.
+                        This works just like the main network ("mainnet") wallet,
+                        but the NEAR Tokens on testnet aren't convertible to
+                        other currencies – they're just for testing!
+                        </p>
                     <p>
                         Go ahead and click the button below to try it out:
-                    </p>
+                        </p>
                     <p style={{ textAlign: 'center', marginTop: '2.5em' }}>
                         <Button variant="info" onClick={login}>Sign in</Button>
                     </p>
@@ -138,6 +147,8 @@ export default function Orderbook() {
             </Card>
         )
     }
+
+    if (loading) return <Loading />;
 
     return (
         <div>
@@ -161,24 +172,35 @@ export default function Orderbook() {
             <CardDeck className="top-card">
                 <Card style={{ marginLeft: "33%" }}>
                     <Card.Header>nDAI Balance</Card.Header>
-                    <Card.Body style={{ fontSize: "25px" }}>{ndaiBalance}</Card.Body>
+                    <Card.Body style={{ fontSize: "25px" }}>
+                        {ndaiBalance}
+                    </Card.Body>
                 </Card>
                 <Card>
                     <Card.Header>nFT Balance</Card.Header>
-                    <Card.Body style={{ fontSize: "25px" }}>{ftBalance}</Card.Body>
+                    <Card.Body style={{ fontSize: "25px" }}>
+                        {ftBalance}
+                    </Card.Body>
                 </Card>
                 <Card>
                     <Card.Header>Ask Spread</Card.Header>
-                    <Card.Body style={{ fontSize: "25px" }}>{spread[0]}</Card.Body>
+                    <Card.Body style={{ fontSize: "25px" }}>
+                        {spread[0]}
+                    </Card.Body>
                 </Card>
                 <Card>
                     <Card.Header>Bid Spread</Card.Header>
-                    <Card.Body style={{ fontSize: "25px" }}>{spread[1]}</Card.Body>
+                    <Card.Body style={{ fontSize: "25px" }}>
+                        {spread[1]}
+                    </Card.Body>
                 </Card>
             </CardDeck>
 
             <Card className="mx-auto form-card">
-                <Card.Header style={{ fontSize: "1.7rem", textAlign: "center" }}>
+                <Card.Header style={{
+                    fontSize: "1.7rem",
+                    textAlign: "center"
+                }}>
                     NEAR ORDER BOOK
                      </Card.Header>
 
@@ -290,7 +312,9 @@ export default function Orderbook() {
                         <u>Ask Orders</u>
                     </p>
 
-                    <Table striped bordered hover style={{ textAlign: "center" }}>
+                    <Table striped bordered hover style={{
+                        textAlign: "center"
+                    }}>
                         <thead>
                             <tr>
                                 <th>Price</th>
@@ -314,7 +338,9 @@ export default function Orderbook() {
                         <u>Bid Orders</u>
                     </p>
 
-                    <Table striped bordered hover style={{ textAlign: "center" }}>
+                    <Table striped bordered hover style={{
+                        textAlign: "center"
+                    }}>
                         <thead>
                             <tr>
                                 <th>Price</th>
@@ -336,20 +362,33 @@ export default function Orderbook() {
 
             <SuccessModal
                 open={successModal.open}
-                toggle={() => setSuccessModal({ ...successModal, open: false })}
+                toggle={() => setSuccessModal({
+                    ...successModal, open: false
+                })}
             >
                 {
                     <aside>
                         Succesfully Created Order ✔
                         <footer>
                             <div>Just now</div>
-                            <a target="_blank" rel="noreferrer" href={`${urlPrefix}/${window.contract.contractId}`}>
+                            <a
+                                target="_blank"
+                                rel="noreferrer"
+                                href={`${urlPrefix}/${window.contract.contractId}`}
+                            >
                                 Contract: {window.contract.contractId}
                             </a>
                         </footer>
                     </aside>
                 }
             </SuccessModal>
+
+            <AlertModal
+                open={errorModal.open}
+                toggle={() => setErrorModal({ ...errorModal, open: false })}
+            >
+                {errorModal.msg}
+            </AlertModal>
         </div>
     )
 }

@@ -9,6 +9,7 @@ import bellBlackLogo from '../../assets/bell-black.svg';
 import { logout, initWeb3 } from '../utils';
 import Loading from '../Utils/Loading';
 import history from '../Utils/History';
+import AlertModal from "../Utils/AlertModal";
 import * as localStorage from './localStorage'
 import './rainbow.css';
 
@@ -26,40 +27,61 @@ export default function Rainbow() {
     const ethUrlPrefix = `https://rinkeby.etherscan.io/address`;
     const nearUrlPrefix = `https://explorer.testnet.near.org/accounts`
 
+    const [errorModal, setErrorModal] = useState({
+        msg: "",
+        open: false
+    });
+
     const formatLargeNum = n => n >= 1e5 || (n < 1e-3 && n !== 0)
         ? n.toExponential(2)
         : new Intl.NumberFormat(undefined, { maximumSignificantDigits: 3 }).format(n)
 
     const getBalanceAndTransfers = async () => {
-        const erc20Balance = Number(
-            await window.erc20.methods.balanceOf(window.ethUserAddress).call()
-        );
-
-        const nep21Balance = Number(
-            await window.nep21.get_balance({ owner_id: window.nearUserAddress })
-        );
-
-        const { inProgress, complete } = get()
-        setInProgressTxs(inProgress);
-        setCompleteTxs(complete);
-
-        setErc20Balance(formatLargeNum(erc20Balance));
-        setNep21Balance(formatLargeNum(nep21Balance));
-
-        if (erc20Balance === 0) {
-            setAlreadyClaimed(
-                await window.freeTokenVault.methods.alreadyClaimed(
-                    window.ethUserAddress
-                ).call()
+        try {
+            const erc20Balance = Number(
+                await window.erc20.methods.balanceOf(window.ethUserAddress).call()
             );
-        }
 
-        setLoading(false);
+            const nep21Balance = Number(
+                await window.nep21.get_balance({ owner_id: window.nearUserAddress })
+            );
+
+            const { inProgress, complete } = get()
+            setInProgressTxs(inProgress);
+            setCompleteTxs(complete);
+
+            setErc20Balance(formatLargeNum(erc20Balance));
+            setNep21Balance(formatLargeNum(nep21Balance));
+
+            if (erc20Balance === 0) {
+                setAlreadyClaimed(
+                    await window.freeTokenVault.methods.alreadyClaimed(
+                        window.ethUserAddress
+                    ).call()
+                );
+            }
+
+            setLoading(false);
+        } catch (error) {
+            setLoading(false);
+            setErrorModal({
+                open: true,
+                msg: error.message,
+            });
+        }
     };
 
     const handleSwap = () => {
-        if (quantity > 0) {
-            initiate(quantity, getBalanceAndTransfers);
+        try {
+            if (quantity > 0) {
+                initiate(quantity, getBalanceAndTransfers);
+            }
+        } catch (error) {
+            setLoading(false);
+            setErrorModal({
+                open: true,
+                msg: error.message,
+            });
         }
     }
 
@@ -79,8 +101,11 @@ export default function Rainbow() {
                 getBalanceAndTransfers();
             })
             .catch((error) => {
-                console.log(error);
                 setProcessing(false);
+                setErrorModal({
+                    open: true,
+                    msg: error.message,
+                });
             });
     }
 
@@ -94,7 +119,10 @@ export default function Rainbow() {
         }, 4000);
     }, []);
 
-    if (localStorage.get(STORAGE_KEY) === "injected" && (!window.ethInitialized || !window.nearInitialized)) {
+    if (
+        localStorage.get(STORAGE_KEY) === "injected" &&
+        (!window.ethInitialized || !window.nearInitialized)
+    ) {
         return (
             <Card className="mx-auto welcome-card">
                 <Card.Header style={{ fontSize: "1.7rem", textAlign: "center" }}>
@@ -106,8 +134,9 @@ export default function Rainbow() {
                         To make use of the Rainbow bridge, you need to connect Metamsk.
                     </p>
                     <p>
-                        Make sure the selected network is <strong>Rinkeby</strong> for using Rainbow bridge.
-                        Note: For using Orderbook you don't need the Metamsk to be initialized.
+                        Make sure the selected network is <strong>Rinkeby</strong> 
+                        for using Rainbow bridge. Note: For using Orderbook you 
+                        don't need the Metamsk to be initialized.
                     </p>
                     <p>
                         Go ahead and click the button below to Initialize Matamsk
@@ -368,6 +397,13 @@ export default function Rainbow() {
                     </Card>
                 }
             </CardDeck>
+
+            <AlertModal
+                open={errorModal.open}
+                toggle={() => setErrorModal({ ...errorModal, open: false })}
+            >
+                {errorModal.msg}
+            </AlertModal>
         </div >
     );
 }

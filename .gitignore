@@ -12,10 +12,8 @@ target/
 **/*.rs.bk
 Cargo.lock
 
-
 #keys
 /neardev
-
 
 # testing
 /coverage
@@ -33,3 +31,5 @@ Cargo.lock
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+/dist
