@@ -72,6 +72,16 @@ html, body, body>div, .app {
 
 .top-card {
   text-align: center;
-  width: 30%;
+  width: 76%;
   margin-top: 2%;
+}
+
+.g-pt-90 {
+  padding-top: 17rem !important;
+}
+
+.order-header {
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.5rem;
 }
