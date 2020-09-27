@@ -18,7 +18,8 @@
     "@babel/preset-react": "^7.9.4",
     "env-cmd": "^10.1.0",
     "gh-pages": "^3.0.0",
-    "parcel-bundler": "^1.12.4"
+    "parcel-bundler": "^1.12.4",
+    "shelljs": "^0.8.4"
   },
   "dependencies": {
     "@walletconnect/web3-provider": "^1.2.1",
