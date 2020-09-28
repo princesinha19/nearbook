@@ -42,18 +42,24 @@ export async function initContract() {
     window.ndai = await new Contract(window.walletConnection.account(), "ndai.hacker.testnet", {
         viewMethods: [
             'get_balance',
+            'get_allowance',
         ],
 
-        changeMethods: [],
+        changeMethods: [
+            'inc_allowance',
+        ],
     });
 
     // Initializing our contract APIs by contract name and configuration
-    window.ft = await new Contract(window.walletConnection.account(), "ft.hacker.testnet", {
+    window.nbook = await new Contract(window.walletConnection.account(), "nbook.hacker.testnet", {
         viewMethods: [
             'get_balance',
+            'get_allowance',
         ],
 
-        changeMethods: [],
+        changeMethods: [
+            'inc_allowance',
+        ],
     });
 
     // const span = document.createElement('span')

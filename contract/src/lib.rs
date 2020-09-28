@@ -13,13 +13,13 @@ const TRANSFER_FROM_NEAR_COST: u128 = 36_500_000_000_000_000_000_000; // 365 x 1
 #[allow(non_camel_case_types)]
 #[derive(PartialEq, Eq, Debug, Copy, Clone, BorshDeserialize, BorshSerialize)]
 pub enum Asset {
-    nFT,
+    nBook,
     nDAI,
 }
 
 impl Default for Asset {
     fn default() -> Self {
-        Asset::nFT
+        Asset::nBook
     }
 }
 
@@ -33,8 +33,8 @@ fn parse_side(side: &str) -> Option<OrderSide> {
 
 fn get_token_account(side: OrderSide) -> String {
     match side {
-        OrderSide::Ask => "ft.hacker.testnet".to_string(),
-        OrderSide::Bid => "dai.hacker.testnet".to_string(),
+        OrderSide::Ask => "nbook.hacker.testnet".to_string(),
+        OrderSide::Bid => "ndai.hacker.testnet".to_string(),
     }
 }
 
@@ -67,8 +67,8 @@ impl Market {
     #[init]
     pub fn new() -> Self {
         Self {
-            market_order_book: Orderbook::new(Asset::nFT, Asset::nDAI),
-            order_asset: Asset::nFT,
+            market_order_book: Orderbook::new(Asset::nBook, Asset::nDAI),
+            order_asset: Asset::nBook,
             price_asset: Asset::nDAI,
         }
     }

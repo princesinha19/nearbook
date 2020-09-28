@@ -7,8 +7,10 @@ import {
     Col,
     Form,
     Table,
-    CardDeck
+    CardDeck,
+    Nav,
 } from "react-bootstrap";
+import BN from 'bn.js';
 import getConfig from '../config'
 import Loading from '../Utils/Loading';
 import history from '../Utils/History';
@@ -16,16 +18,18 @@ import AlertModal from "../Utils/AlertModal";
 import SuccessModal from "../Utils/SuccessModal";
 import rainbowGif from '../../assets/rainbow-black.gif';
 
-const { networkId } = getConfig(process.env.NODE_ENV || 'development')
-const urlPrefix = `https://explorer.${networkId}.near.org/accounts`
+const { networkId } = getConfig(process.env.NODE_ENV || 'development');
+const urlPrefix = `https://explorer.${networkId}.near.org/accounts`;
 
 export default function Orderbook() {
-    // use React Hooks to store greeting in component state
     const [askOrders, setAskOrders] = useState([]);
     const [bidOrders, setBidOrders] = useState([]);
     const [spread, setSpread] = useState([]);
     const [ndaiBalance, setNdaiBalance] = useState("");
-    const [ftBalance, setFtBalance] = useState("");
+    const [nbookBalance, setNbookBalance] = useState("");
+    const [ndaiAllowance, setNdaiAllowance] = useState("");
+    const [nbookAllowance, setNbookAllowance] = useState("");
+    const [action, setAction] = useState("Buy");
     const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState(false);
     const [successModal, setSuccessModal] = useState({
@@ -37,56 +41,55 @@ export default function Orderbook() {
     });
 
     const [state, setState] = useState({
-        price: "1.10",
-        quantity: "1",
-    });
-
-    const [side, setSide] = useState({
-        Ask: true,
-        Bid: false,
+        price: "",
+        quantity: "",
     });
 
     const submitOrder = async () => {
-        if (window.walletConnection.isSignedIn()) {
+        try {
+            if (window.walletConnection.isSignedIn()) {
 
-            let orderSide = "";
-            if (side.Ask) {
-                orderSide = "Ask";
-            } else if (side.Bid) {
-                orderSide = "Bid";
-            }
+                setProcessing(true);
 
-            setProcessing(true);
+                // await approveNearToken(state.quantity);
 
-            await window.contract.new_limit_order
-                ({
+                await window.contract.new_limit_order({
                     price: parseFloat(state.price),
                     quantity: parseInt(state.quantity),
-                    side: orderSide,
-                }, 300000000000000)
-                .then(() => {
-                    setProcessing(false);
-                    setSuccessModal({ open: true });
-                    fetchOrdersAndBalance();
-                })
-                .catch((error) => {
-                    setProcessing(false);
-                    setErrorModal({
-                        open: true,
-                        msg: error.message,
-                    });
-                });
+                    side: action === "Buy" ? "Bid" : "Ask",
+                }, new BN('300000000000000'));
+
+                setProcessing(false);
+                setSuccessModal({ open: true });
+                fetchOrdersAndBalance();
+            }
+        } catch (error) {
+            setProcessing(false);
+            setErrorModal({
+                open: true,
+                msg: error.message,
+            });
         }
     };
 
     const fetchOrdersAndBalance = async () => {
         try {
-            const ftBalance = await window.ft.get_balance({
+            const ndaiBalance = await window.ndai.get_balance({
                 owner_id: window.accountId
             });
 
-            const ndaiBalance = await window.ndai.get_balance({
+            const nbookBalance = await window.nbook.get_balance({
                 owner_id: window.accountId
+            });
+
+            const ndaiAllowance = await window.ndai.get_allowance({
+                owner_id: window.accountId,
+                escrow_account_id: window.contract.contractId,
+            });
+
+            const nbookAllowance = await window.nbook.get_allowance({
+                owner_id: window.accountId,
+                escrow_account_id: window.contract.contractId,
             });
 
             const spread = await window.contract.get_current_spread();
@@ -96,8 +99,10 @@ export default function Orderbook() {
             setSpread(spread);
             setAskOrders(askOrders);
             setBidOrders(bidOrders);
-            setFtBalance(ftBalance);
             setNdaiBalance(ndaiBalance);
+            setNbookBalance(nbookBalance);
+            setNdaiAllowance(ndaiAllowance);
+            setNbookAllowance(nbookAllowance);
             setLoading(false);
         } catch (error) {
             setLoading(false);
@@ -106,11 +111,38 @@ export default function Orderbook() {
                 msg: error.message,
             });
         }
-    }
+    };
+
+    const approveNearToken = async () => {
+        try {
+            let contract, amount;
+            if (action === "Buy") {
+                contract = window.ndai;
+                amount = Number(state.quantity) - ndaiAllowance;
+            } else if (action === "Sell") {
+                contract = window.nbook;
+                amount = Number(state.quantity) - nbookAllowance;
+            }
+
+            await contract.inc_allowance
+                ({
+                    amount: amount.toString(),
+                    escrow_account_id: window.contract.contractId,
+                },
+                    new BN('300000000000000'),
+                    new BN('100000000000000000000').mul(new BN('350')),
+                );
+        } catch (error) {
+            setErrorModal({
+                open: true,
+                msg: error.message,
+            });
+        }
+    };
 
     const redirectToRainbowBridge = () => {
         history.push('/rainbow-bridge');
-    }
+    };
 
     useEffect(() => {
         if (window.walletConnection.isSignedIn()) {
@@ -177,19 +209,19 @@ export default function Orderbook() {
                     </Card.Body>
                 </Card>
                 <Card>
-                    <Card.Header>nFT Balance</Card.Header>
+                    <Card.Header>nBook Balance</Card.Header>
                     <Card.Body style={{ fontSize: "25px" }}>
-                        {ftBalance}
+                        {nbookBalance}
                     </Card.Body>
                 </Card>
                 <Card>
-                    <Card.Header>Ask Spread</Card.Header>
+                    <Card.Header>Current Buy Price</Card.Header>
                     <Card.Body style={{ fontSize: "25px" }}>
                         {spread[0]}
                     </Card.Body>
                 </Card>
                 <Card>
-                    <Card.Header>Bid Spread</Card.Header>
+                    <Card.Header>Current Sell Price</Card.Header>
                     <Card.Body style={{ fontSize: "25px" }}>
                         {spread[1]}
                     </Card.Body>
@@ -198,67 +230,42 @@ export default function Orderbook() {
 
             <Card className="mx-auto form-card">
                 <Card.Header style={{
-                    fontSize: "1.7rem",
-                    textAlign: "center"
+                    fontWeight: "bold",
+                    fontSize: "large"
                 }}>
-                    NEAR ORDER BOOK
-                     </Card.Header>
+                    <u>Place your order</u>
+                </Card.Header>
 
-                <Card.Body style={{ textAlign: "left" }}>
-                    <p
-                        style={{ textAlign: "center", fontWeight: "bold" }}
+                <Card.Body>
+                    <Nav
+                        className="navbar"
+                        fill variant="pills"
+                        defaultActiveKey="Buy"
+                        onSelect={(e) => setAction(e)}
                     >
-                        <u>Place your order</u>
-                    </p>
+                        <Nav.Item style={{ color: "green !important" }}>
+                            <Nav.Link eventKey="Buy">Buy</Nav.Link>
+                        </Nav.Item>
+                        <Nav.Item>
+                            <Nav.Link eventKey="Sell">Sell</Nav.Link>
+                        </Nav.Item>
+                    </Nav>
 
                     <Row>
-                        <Col>
-                            <div key={`inline-radio`} className="mb-3">
-                                <span><strong>Side: </strong></span>
-                                <Form.Check
-                                    inline
-                                    label="Ask"
-                                    type="radio"
-                                    id={`inline-radio-1`}
-                                    checked={side.Ask}
-                                    onChange={() => {
-                                        setSide({
-                                            ...side,
-                                            Ask: true,
-                                            Bid: false,
-                                        });
-                                    }}
-                                />
-
-                                <Form.Check
-                                    inline
-                                    label="Bid"
-                                    type="radio"
-                                    id={`inline-radio-2`}
-                                    checked={side.Bid}
-                                    onChange={() => {
-                                        setSide({
-                                            ...side,
-                                            Ask: false,
-                                            Bid: true,
-                                        });
-                                    }}
-                                />
-                            </div>
+                        <Col style={{ marginTop: "7px", fontWeight: "bold" }}>
+                            Quantity:
                         </Col>
-                    </Row>
-
-                    <Row>
-                        <Col>
+                        <Col style={{ paddingLeft: "0px" }}>
                             <Form.Control
                                 className="mb-4"
                                 type="number"
                                 step="0"
-                                placeholder="Quantity"
+                                placeholder="No decimal places"
                                 onChange={(e) => setState({
                                     ...state,
                                     quantity: e.target.value
                                 })}
+                                style={{ width: "80%" }}
                                 value={state.quantity}
                                 required
                             />
@@ -266,16 +273,20 @@ export default function Orderbook() {
                     </Row>
 
                     <Row>
-                        <Col>
+                        <Col style={{ marginTop: "6px", fontWeight: "bold" }}>
+                            Price:
+                        </Col>
+                        <Col style={{ paddingLeft: "0px" }}>
                             <Form.Control
                                 className="mb-4"
                                 type="number"
                                 step=".01"
-                                placeholder="Price"
+                                placeholder="Only 2 decimal places"
                                 onChange={(e) => setState({
                                     ...state,
                                     price: e.target.value
                                 })}
+                                style={{ width: "80%" }}
                                 value={state.price}
                                 required
                             />
@@ -284,19 +295,48 @@ export default function Orderbook() {
                 </Card.Body>
 
                 <Card.Footer className="text-center">
-                    <Button
-                        onClick={submitOrder}
-                        variant="outline-success"
-                    >
-                        {processing ?
-                            <div className="d-flex align-items-center">
-                                Processing
+                    {(action === "Buy" && ndaiAllowance >= Number(state.quantity)) ||
+                        (action === "Sell" && nbookAllowance >= Number(state.quantity)) ?
+                        <Button
+                            onClick={submitOrder}
+                            variant="outline-success"
+                        >
+                            {processing ?
+                                <div className="d-flex align-items-center">
+                                    Processing
                                 <span className="loading ml-2"></span>
-                            </div>
-                            :
-                            <div>Place Order</div>
-                        }
-                    </Button>
+                                </div>
+                                :
+                                <div>Place Order</div>
+                            }
+                        </Button>
+                        :
+                        <Button
+                            onClick={approveNearToken}
+                            variant="outline-success"
+                        >
+                            {processing ?
+                                <div className="d-flex align-items-center">
+                                    Processing
+                                <span className="loading ml-2"></span>
+                                </div>
+                                :
+                                <div>
+                                    <span>Approve </span>
+                                    {action === "Buy" ?
+                                        <span>
+                                            {Number(state.quantity) - ndaiAllowance} nDAI
+                                        </span>
+                                        :
+                                        <span>
+                                            {Number(state.quantity) - nbookAllowance} nBook
+                                        </span>
+                                    }
+                                </div>
+                            }
+                        </Button>
+                    }
+
                 </Card.Footer>
             </Card>
 
@@ -309,33 +349,7 @@ export default function Orderbook() {
             >
                 <Col xs lg="4">
                     <p className="order-header">
-                        <u>Ask Orders</u>
-                    </p>
-
-                    <Table striped bordered hover style={{
-                        textAlign: "center"
-                    }}>
-                        <thead>
-                            <tr>
-                                <th>Price</th>
-                                <th>Quantity</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {askOrders.map((element, k) => (
-                                <tr key={k}>
-                                    <td>{Number(element.price)}</td>
-
-                                    <td>{element.quantity} nFT</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                </Col>
-
-                <Col xs lg="4">
-                    <p className="order-header">
-                        <u>Bid Orders</u>
+                        <u>Buy Orders</u>
                     </p>
 
                     <Table striped bordered hover style={{
@@ -358,6 +372,33 @@ export default function Orderbook() {
                         </tbody>
                     </Table>
                 </Col>
+
+                <Col xs lg="4">
+                    <p className="order-header">
+                        <u>Sell Orders</u>
+                    </p>
+
+                    <Table striped bordered hover style={{
+                        textAlign: "center"
+                    }}>
+                        <thead>
+                            <tr>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {askOrders.map((element, k) => (
+                                <tr key={k}>
+                                    <td>{Number(element.price)}</td>
+
+                                    <td>{element.quantity} nBook</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </Table>
+                </Col>
+
             </Row>
 
             <SuccessModal

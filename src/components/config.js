@@ -18,7 +18,7 @@ function getConfig(env) {
             return {
                 networkId: 'testnet',
                 nodeUrl: 'https://rpc.testnet.near.org',
-                contractName: 'test1.hacker.testnet',
+                contractName: 'nearbook.hacker.testnet',
                 walletUrl: 'https://wallet.testnet.near.org',
                 helperUrl: 'https://helper.testnet.near.org',
                 explorerUrl: 'https://explorer.testnet.near.org',
