@@ -132,7 +132,7 @@ export default function Rainbow() {
                         To make use of the Rainbow bridge, you need to connect Metamsk.
                     </p>
                     <p>
-                        Make sure the selected network is <strong>Rinkeby</strong>
+                        Make sure the selected network is <strong>Rinkeby </strong>
                         for using Rainbow bridge. Note: For using Orderbook you
                         don't need the Metamsk to be initialized.
                     </p>

@@ -150,14 +150,14 @@ export default function Orderbook() {
         return (
             <Card className="mx-auto welcome-card">
                 <Card.Header style={{ fontSize: "1.7rem", textAlign: "center" }}>
-                    Welcome to NEAR Orderbook
+                    Welcome to NearBook 📖
                 </Card.Header>
 
                 <Card.Body style={{ textAlign: "center", marginTop: "4%" }}>
                     <p>
                         To make use of the NEAR blockchain, you need to sign in.
                         The button below will sign you in using NEAR Wallet.
-                        </p>
+                    </p>
                     <p>
                         By default, when your app runs in "development" mode,
                         it connects to a test network ("testnet") wallet.
@@ -362,7 +362,7 @@ export default function Orderbook() {
                                 <tr key={k}>
                                     <td>{Number(element.price)}</td>
 
-                                    <td>{element.quantity} nDAI</td>
+                                    <td>{element.quantity} nBook</td>
                                 </tr>
                             ))}
                         </tbody>
