@@ -1,5 +1,7 @@
+import history from '../Utils/History';
+
 export function get(...paramNames) {
-    const params = new URLSearchParams(window.location.search)
+    const params = new URLSearchParams(history.location.search);
 
     if (paramNames.length === 1) {
         return params.get(paramNames[0])
@@ -12,19 +14,21 @@ export function get(...paramNames) {
 }
 
 export function set(newParams) {
-    const params = new URLSearchParams(window.location.search)
+    const params = new URLSearchParams(history.location.search)
     for (const param in newParams) {
         params.set(param, newParams[param])
     }
-    window.history.replaceState({}, '', `${location.pathname}?${params}`)
+    console.log(history.location.pathname)
+    window.history.replaceState({}, '', `/nearbook/#/rainbow-bridge/?${params}`);
 }
 
 export function clear(...paramNames) {
     if (paramNames.length === 0) {
-        window.history.replaceState({}, '', `${location.pathname}`)
+        window.history.replaceState({}, '', `${history.location.pathname}`)
     } else {
-        const params = new URLSearchParams(window.location.search)
+        const params = new URLSearchParams(history.location.search)
         paramNames.forEach(p => params.delete(p))
-        window.history.replaceState({}, '', `${location.pathname}?${params}`)
+
+        window.history.replaceState({}, '', `/nearbook/#/rainbow-bridge/`);
     }
 }

@@ -116,7 +116,9 @@ export default function Rainbow() {
     }, []);
 
     if (
-        localStorage.get(STORAGE_KEY) === "injected" &&
+        (localStorage.get(STORAGE_KEY) === "injected" ||
+            !localStorage.get(STORAGE_KEY)
+        ) &&
         (!window.ethInitialized || !window.nearInitialized)
     ) {
         return (
