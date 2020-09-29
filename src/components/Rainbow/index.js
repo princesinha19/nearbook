@@ -8,7 +8,7 @@ import rainbowGif from '../../assets/rainbow-black.gif';
 import bellBlackLogo from '../../assets/bell-black.svg';
 import { logout, initWeb3 } from '../utils';
 import Loading from '../Utils/Loading';
-import history from '../Utils/History';
+import { Link } from 'react-router-dom';
 import AlertModal from "../Utils/AlertModal";
 import * as localStorage from './localStorage'
 import './rainbow.css';
@@ -85,10 +85,6 @@ export default function Rainbow() {
         }
     }
 
-    const redirectToHome = () => {
-        history.push('/');
-    }
-
     const handleGetFreeTokens = () => {
         window.freeTokenVault.methods
             .claimTestTokens()
@@ -134,8 +130,8 @@ export default function Rainbow() {
                         To make use of the Rainbow bridge, you need to connect Metamsk.
                     </p>
                     <p>
-                        Make sure the selected network is <strong>Rinkeby</strong> 
-                        for using Rainbow bridge. Note: For using Orderbook you 
+                        Make sure the selected network is <strong>Rinkeby</strong>
+                        for using Rainbow bridge. Note: For using Orderbook you
                         don't need the Metamsk to be initialized.
                     </p>
                     <p>
@@ -161,18 +157,17 @@ export default function Rainbow() {
         <div>
             <CardDeck></CardDeck>
 
-            <div
-                variant="outline-secondary"
+            <Link
+                className="float-left"
+                to={`/`}
                 style={{
                     marginLeft: "2%",
                     marginTop: "2%",
                     cursor: "pointer",
                 }}
-                className="float-left"
-                onClick={redirectToHome}
             >
                 <img style={{ height: "2em" }} src={nearLogo} />
-            </div>
+            </Link>
 
             <Button
                 variant="warning"

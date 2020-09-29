@@ -13,12 +13,12 @@ import {
 import BN from 'bn.js';
 import getConfig from '../config'
 import Loading from '../Utils/Loading';
-import history from '../Utils/History';
+import { Link } from 'react-router-dom';
 import AlertModal from "../Utils/AlertModal";
 import SuccessModal from "../Utils/SuccessModal";
 import rainbowGif from '../../assets/rainbow-black.gif';
 
-const { networkId } = getConfig(process.env.NODE_ENV || 'development');
+const { networkId } = getConfig('development');
 const urlPrefix = `https://explorer.${networkId}.near.org/accounts`;
 
 export default function Orderbook() {
@@ -140,10 +140,6 @@ export default function Orderbook() {
         }
     };
 
-    const redirectToRainbowBridge = () => {
-        history.push('/rainbow-bridge');
-    };
-
     useEffect(() => {
         if (window.walletConnection.isSignedIn()) {
             fetchOrdersAndBalance();
@@ -193,13 +189,13 @@ export default function Orderbook() {
                 Sign out
             </Button>
 
-            <div
+            <Link
                 className="float-right"
-                onClick={redirectToRainbowBridge}
                 style={{ marginRight: "2%", cursor: "pointer" }}
+                to={`/rainbow-bridge`}
             >
                 <img style={{ width: '6em' }} src={rainbowGif} />
-            </div>
+            </Link>
 
             <CardDeck className="top-card">
                 <Card style={{ marginLeft: "33%" }}>

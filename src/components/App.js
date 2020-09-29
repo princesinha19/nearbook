@@ -4,7 +4,7 @@ import 'regenerator-runtime/runtime';
 import 'bootstrap/dist/css/bootstrap.css';
 import {
     Switch,
-    Router,
+    HashRouter,
     Route,
     Redirect,
 } from "react-router-dom";
@@ -27,9 +27,9 @@ function App() {
 
     return (
         <div className="App">
-            <Router history={history}>
+            <HashRouter history={history}>
                 {routes}
-            </Router>
+            </HashRouter>
         </div>
     );
 }

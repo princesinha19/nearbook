@@ -7,7 +7,7 @@ import config from './configRainbow';;
 import EthOnNearClient from './Rainbow/borsh/ethOnNearClient';
 import * as localStorage from './Rainbow/localStorage'
 
-const nearConfig = getConfig(process.env.NODE_ENV || 'development')
+const nearConfig = getConfig('development');
 
 // Initialize contract & set global variables
 export async function initContract() {
@@ -163,7 +163,7 @@ export function logout() {
     const STORAGE_KEY = 'WEB3_CONNECT_CACHED_PROVIDER';
     localStorage.set(STORAGE_KEY, "injected");
 
-    window.location.replace(window.location.origin);
+    window.location.replace(window.location.origin + "/nearbook");
 }
 
 export function login() {
