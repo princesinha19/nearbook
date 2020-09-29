@@ -1,11 +1,12 @@
 {
-  "name": "near-orderbook",
+  "name": "nearbook",
+  "homepage": "https://princesinha19.github.io/nearbook/",
   "version": "0.1.0",
   "license": "UNLICENSED",
   "scripts": {
     "build": "npm run build:contract && npm run build:web",
     "build:contract": "node ./contract/build",
-    "build:web": "parcel build src/index.html --public-url ./",
+    "build:web": "parcel build src/index.html --public-url /nearbook/",
     "dev:deploy:contract": "near dev-deploy",
     "deploy:contract": "near deploy",
     "deploy:pages": "gh-pages -d dist/",
