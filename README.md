@@ -2,7 +2,9 @@ NearBook 📖
 ===========
 It is an On-Chain orderbook implemented using Rust. By "On-chain", We mean that the matching engine is implemented as a smart contract on the near blockchain. It allows users to create Limit Orders. Currently, It supports one market nDAI <-> nBook. nDAI (Near DAI) works as a price asset, which can be obtained by locking DAI (ETH erc20 token) using Rainbow Bridge.
 
-**Application Link:** https://princesinha19.github.io/nearbook/
+**Live Application:** <a href="https://princesinha19.github.io/nearbook/" target="_blank" rel="noreferrer">Try Out On Github</a> / <a href="https://siasky.net/AAAJ_Q-Zq9Pf0tejHbQA5WolmmROhA44jg5qrCRQjia8Cg" target="_blank" rel="noreferrer">Try Out On Skynet</a>
+
+**Demo Video On Skynet:** https://siasky.net/_AVvKX781oq27T_cXUYwYzcARZKFIPPdvXJBQVyWUFbfwA
 
 Description
 ===========
@@ -25,13 +27,13 @@ The smart contract support features like creating limit orders, canceling orders
 
 The frontend is written in React.js. It has two main components:
 
-1. **Orderbook Page**
+1. **Orderbook Page** 📖
 
     This page is for creating Limit orders. It displays the user's current balance. Also, one can see all buys & sells orders with the current price. 
 
     From this page, You can go to rainbow bridge page for moving DAI on NEAR.
 
-2. **Rainbow Bridge Page**
+2. **Rainbow Bridge Page** 🌈
 
     From this page, you can transfer DAI token to NEAR by locking DAI on the Locker contract. You can also use Reward Vault for getting 100 DAI tokens per address if you don't have any DAI. 
     You can click on the NEAR logo on the top left for going back to the Orderbook page.
